@@ -1,0 +1,31 @@
+name: Mantener repositorio activo
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Corre cada 15 días a las 03:17 UTC.
+    # Se usa minuto 17 para evitar horas de alta carga en GitHub Actions.
+    - cron: "17 3 */15 * *"
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Actualizar archivo keepalive
+        run: |
+          echo "Última actividad automática: $(date -u)" > last-keepalive.txt
+
+      - name: Crear commit automático
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add last-keepalive.txt
+          git commit -m "Mantener repositorio activo" || echo "Sin cambios para commitear"
+          git push
