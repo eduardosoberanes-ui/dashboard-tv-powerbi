@@ -1,0 +1,57 @@
+name: Capturar y publicar dashboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Cada 30 minutos. GitHub Actions usa horario UTC.
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  capture-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Capturar Power BI como imagen
+        run: node capture.js
+        env:
+          POWER_BI_URL: ${{ secrets.POWER_BI_URL }}
+          EXTRA_WAIT_MS: "75000"
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Preparar artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "site"
+
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
