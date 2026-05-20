@@ -1,0 +1,11 @@
+name: Prueba simple
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probar GitHub Actions
+        run: echo "GitHub Actions funciona"
