@@ -41,7 +41,7 @@ jobs:
         run: node capture.js
         env:
           POWER_BI_URL: ${{ secrets.POWER_BI_URL }}
-          EXTRA_WAIT_MS: "75000"
+          EXTRA_WAIT_MS: "120000"
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
