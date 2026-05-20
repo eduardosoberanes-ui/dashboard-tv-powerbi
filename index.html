@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard TV</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      cursor: none;
+      font-family: Arial, sans-serif;
+    }
+
+    #dashboard {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    #status {
+      position: fixed;
+      right: 14px;
+      bottom: 10px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.45);
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      user-select: none;
+    }
+
+    #fallback {
+      display: none;
+      position: fixed;
+      inset: 0;
+      color: white;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <img id="dashboard" alt="Dashboard Power BI" />
+  <div id="status">Cargando...</div>
+  <div id="fallback">
+    No se encontró dashboard.png todavía.<br />
+    Ejecuta el workflow de GitHub Actions una vez.
+  </div>
+
+  <script>
+    const img = document.getElementById("dashboard");
+    const status = document.getElementById("status");
+    const fallback = document.getElementById("fallback");
+
+    function cargarImagen() {
+      const ahora = new Date();
+      img.src = "dashboard.png?v=" + ahora.getTime();
+      status.textContent = "Vista actualizada: " + ahora.toLocaleString("es-MX");
+    }
+
+    img.onerror = function () {
+      fallback.style.display = "flex";
+      status.textContent = "Sin imagen";
+    };
+
+    img.onload = function () {
+      fallback.style.display = "none";
+    };
+
+    cargarImagen();
+
+    // Recarga visible en Silk cada 30 minutos.
+    setInterval(cargarImagen, 30 * 60 * 1000);
+
+    // Recarga la página completa cada 6 horas para evitar degradación del navegador.
+    setInterval(function () {
+      window.location.reload();
+    }, 6 * 60 * 60 * 1000);
+  </script>
+</body>
+</html>
