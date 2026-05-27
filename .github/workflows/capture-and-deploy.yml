@@ -3,8 +3,9 @@ name: Capturar y publicar dashboard
 on:
   workflow_dispatch:
   schedule:
-    # Cada 30 minutos. GitHub Actions usa horario UTC.
-    - cron: "*/30 * * * *"
+    # Cada 30 minutos, pero evitando minutos 00 y 30 para reducir demoras de GitHub Actions.
+    # GitHub Actions usa horario UTC.
+    - cron: "7,37 * * * *"
 
 permissions:
   contents: read
@@ -12,12 +13,13 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: dashboard-tv-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   capture-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
