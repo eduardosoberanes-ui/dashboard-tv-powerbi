@@ -54,11 +54,11 @@
 </head>
 
 <body>
-  <img id="dashboard" src="dashboard.png" alt="Dashboard Power BI" />
+  <img id="dashboard" alt="Dashboard Power BI" />
   <div id="status">Cargando...</div>
 
   <div id="fallback">
-    No se encontró dashboard.png todavía.<br />
+    No se encontraron imágenes todavía.<br />
     Ejecuta el workflow de GitHub Actions una vez.
   </div>
 
@@ -66,6 +66,19 @@
     const img = document.getElementById("dashboard");
     const status = document.getElementById("status");
     const fallback = document.getElementById("fallback");
+
+    const pantallas = [
+      {
+        nombre: "Pantalla 1",
+        archivo: "dashboard.png"
+      },
+      {
+        nombre: "Pantalla 2",
+        archivo: "dashboard-2.png"
+      }
+    ];
+
+    let indiceActual = 0;
 
     function textoFechaActual() {
       return new Date().toLocaleString("es-MX");
@@ -75,51 +88,49 @@
       status.textContent = mensaje;
     }
 
-    function cargarImagenInicial() {
+    function cargarPantalla(indice) {
+      const pantalla = pantallas[indice];
       const version = Date.now();
-      const url = "dashboard.png?v=" + version;
+      const url = pantalla.archivo + "?v=" + version;
 
-      img.onload = function () {
-        fallback.style.display = "none";
-        actualizarEstado("Vista actualizada: " + textoFechaActual());
-      };
-
-      img.onerror = function () {
-        fallback.style.display = "flex";
-        actualizarEstado("Sin imagen");
-      };
-
-      img.src = url;
-    }
-
-    function refrescarImagenSinParpadeo() {
-      const version = Date.now();
-      const nuevaUrl = "dashboard.png?v=" + version;
-
-      actualizarEstado("Buscando actualización...");
+      actualizarEstado("Cargando " + pantalla.nombre + "...");
 
       const precarga = new Image();
 
       precarga.onload = function () {
-        img.src = nuevaUrl;
+        img.src = url;
         fallback.style.display = "none";
-        actualizarEstado("Vista actualizada: " + textoFechaActual());
+        actualizarEstado(
+          pantalla.nombre + " | Vista actualizada: " + textoFechaActual()
+        );
       };
 
       precarga.onerror = function () {
-        actualizarEstado("No se pudo actualizar. Se mantiene la vista anterior.");
+        if (!img.src) {
+          fallback.style.display = "flex";
+          actualizarEstado("Sin imagen disponible");
+        } else {
+          actualizarEstado(
+            "No se pudo cargar " + pantalla.nombre + ". Se mantiene la vista anterior."
+          );
+        }
       };
 
-      precarga.src = nuevaUrl;
+      precarga.src = url;
     }
 
-    cargarImagenInicial();
+    function siguientePantalla() {
+      indiceActual = (indiceActual + 1) % pantallas.length;
+      cargarPantalla(indiceActual);
+    }
 
-    // Revisa si hay una nueva imagen cada 30 minutos.
-    // Mantiene la imagen anterior visible hasta que la nueva cargue correctamente.
-    setInterval(refrescarImagenSinParpadeo, 30 * 60 * 1000);
+    // Carga inicial.
+    cargarPantalla(indiceActual);
 
-    // Recarga completa cada 6 horas para evitar que Silk se degrade con el tiempo.
+    // Alterna entre pantallas cada 30 segundos.
+    setInterval(siguientePantalla, 30 * 1000);
+
+    // Recarga completa cada 6 horas para evitar degradación en Silk.
     setInterval(function () {
       window.location.reload();
     }, 6 * 60 * 60 * 1000);
